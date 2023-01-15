@@ -1,7 +1,7 @@
-Nummer,Karte,Foil,Set,Url
+Nummer,Karte,Foil,Edition,scryfall,trader
 137,,True
-,Inneres Auge
-,Ähnlichkeitsamboss
+,Inneres Auge,,any
+,Ähnlichkeitsamboss,,any
 220
 192
 83
@@ -37,7 +37,6 @@ Nummer,Karte,Foil,Set,Url
 168
 118
 287
-275
 169
 249
 112
@@ -64,10 +63,10 @@ Nummer,Karte,Foil,Set,Url
 191
 175
 172
-,Calumns Zauberbuch
-,Elfenbeinturm
-,Frühlingsblättertrommel
-,Mühlstein
+,Calums Zauberbuch,,any
+,Elfenbeinturm,,any
+,Frühlingsblättertrommel,,any
+,Mühlstein,,any
 22
 115
 188
@@ -100,11 +99,6 @@ Nummer,Karte,Foil,Set,Url
 162
 241
 77
-7
-2
-7
-5
-7
 2
 180
 243
