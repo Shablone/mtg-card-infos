@@ -25,16 +25,18 @@ def GetInfo(url):
         Kartenname = response_json["data"][0]["printed_name"]
         Edition = response_json["data"][0]["set"]
         Nummer = response_json["data"][0]["collector_number"]
+        Seltenheit = response_json["data"][0]["rarity"]
     else:
         Kartenname= "?"
         Edition = "?"
         Nummer = "?"
-    return {"Funde":Funde, "Edition":Edition, "Nummer":Nummer, "Kartenname":Kartenname}
+        Seltenheit = "?"
+    return {"Funde":Funde, "Edition":Edition, "Nummer":Nummer, "Kartenname":Kartenname, "Seltenheit":Seltenheit}
 
 
 #%% 
 # read csv and parse
-df = pd.read_csv("cards.csv", header=0)
+df = pd.read_csv("data/cards.csv", header=0)
 df["Funde"] =  np.nan
 default_edition = "bro"
 lang ="de"
@@ -57,6 +59,7 @@ for index, line in df.iterrows():
         df.at[index, "Edition"] = Info["Edition"]
         df.at[index, "Nummer"] = Info["Nummer"]
         df.at[index, "Karte"] = Info["Kartenname"]
+        df.at[index, "Seltenheit"] = Info["Seltenheit"]
 
 # %% 
 # fill price and save to csv
@@ -72,13 +75,14 @@ for index, card in df.iterrows():
         results = soup.find(class_="price-pre price_product_details")
         df.at[index, "Preis"] = results.text.replace("[","").replace("€","").replace(" ","")
     except Exception:
-        df.at[index, "Preis"] = "err"
+        df.at[index, "Preis"] = "not found"
 
 
     
     time.sleep(0.2)
 
-df.to_csv("result.csv", sep=";", encoding='utf-16')
+df.to_csv("data/result.csv", sep=";", encoding='utf-16')
+
 #%%
 def print_json_keys(json_obj, level=0):
     if isinstance(json_obj, dict):
