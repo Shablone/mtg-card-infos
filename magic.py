@@ -5,6 +5,7 @@ import time
 import urllib.parse
 import numpy as np
 import re
+from tqdm import tqdm
 from bs4 import BeautifulSoup
 
 #%%
@@ -13,25 +14,34 @@ Editionen = {
     "The Brothers' War Retro Artifacts":"Krieg-der-Brueder"
     }
 
-def GetInfo(url):
+def GetInfoFromScryfall(lang, number, edition, name, foil):
+
+    url = f"https://api.scryfall.com/cards/search?q=lang%3A{lang}+extras%3Atrue"
+
+    if not pd.isnull(number): 
+        url += f"+number%3A{number}"
+    if edition != "any": 
+        url += f"+set%3A{edition}"
+    if not pd.isnull(name): 
+        url += f"+name%3A%2F{urllib.parse.quote(name)}%2F"
+    if pd.isnull(foil): 
+        df.at[index, "Foil"] = False
+
     response = requests.get(url=url)
-    time.sleep(0.2)
+    time.sleep(0.2) #website requests from sleep times inbetween requests
     response_json = response.json()
-    if not "total_cards" in response_json:
-        Funde = -999
+
+    
+
+    if response_json["total_cards"] == 1:
+        card = response_json["data"][0]
+        card["total_cards"] = response_json["total_cards"]
+        return card
     else:
-        Funde = response_json["total_cards"]
-    if Funde == 1:
-        Kartenname = response_json["data"][0]["printed_name"]
-        Edition = response_json["data"][0]["set"]
-        Nummer = response_json["data"][0]["collector_number"]
-        Seltenheit = response_json["data"][0]["rarity"]
-    else:
-        Kartenname= "?"
-        Edition = "?"
-        Nummer = "?"
-        Seltenheit = "?"
-    return {"Funde":Funde, "Edition":Edition, "Nummer":Nummer, "Kartenname":Kartenname, "Seltenheit":Seltenheit}
+        return {
+            "total_cards": response_json["total_cards"],
+            "scryfall_uri":url
+            }
 
 
 #%% 
@@ -41,25 +51,23 @@ df["Funde"] =  np.nan
 default_edition = "bro"
 lang ="de"
 responses = []
-for index, line in df.iterrows():
-    edition = line.Edition if not pd.isnull(line.Edition) else default_edition
-    number = line.Nummer
-    name = line.Karte
+with tqdm(total=len(df)) as pbar:
+    for index, line in df.iterrows():
+        edition = line.Edition if not pd.isnull(line.Edition) else default_edition
+        number = line.Nummer
+        name = line.Karte
+        foil = line.Foil
 
-    url = f"https://api.scryfall.com/cards/search?q=lang%3A{lang}+extras%3Atrue"
-    if not pd.isnull(number): url += f"+number%3A{number}"
-    if edition != "any": url += f"+set%3A{edition}"
-    if not pd.isnull(name): url += f"+name%3A%2F{urllib.parse.quote(name)}%2F"
-    if pd.isnull(line.Foil): df.at[index, "Foil"] = False
-    df.at[index, "scryfall"] = url
-    Info = GetInfo(url)
+        Info = GetInfoFromScryfall(lang,number,edition,name,foil)
 
-    df.at[index, "Funde"] = int(Info["Funde"])
-    if Info["Funde"] == 1: 
-        df.at[index, "Edition"] = Info["Edition"]
-        df.at[index, "Nummer"] = Info["Nummer"]
-        df.at[index, "Karte"] = Info["Kartenname"]
-        df.at[index, "Seltenheit"] = Info["Seltenheit"]
+        df.at[index, "Funde"] = int(Info["total_cards"])
+        if Info["total_cards"] == 1: 
+            df.at[index, "Edition"] = Info["set"]
+            df.at[index, "Nummer"] = Info["collector_number"]
+            df.at[index, "Karte"] = Info["printed_name"]
+            df.at[index, "Seltenheit"] = Info["rarity"]
+            df.at[index, "scryfall"] = Info["scryfall_uri"]
+        pbar.update(1)
 
 # %% 
 # fill price and save to csv
