@@ -1,4 +1,4 @@
-Nummer,Karte,Foil,Edition,scryfall,trader,Seltenheit
+number,cardnameDE,foil,edition,scryfall,scryfall_api,price_traderonline,rarity,cardnameEN
 137,,True
 ,Inneres Auge,,any
 ,Ähnlichkeitsamboss,,any
